@@ -1,0 +1,260 @@
+线性表
+    1、定义：线性表 是n个具有相同特性的数据元素的有限序列。 线性表是一
+                    种在实际中广 泛使用的数据结构。
+    2、 常见的线性表：顺序表、链表、栈、队列、字符串...
+    3、线性表在逻辑上是线性结构，也就说是连续的一条直线。但是在物理结
+          构上并不一定是连续的，线性表在物理上存储时，通常以数组
+          和链式结构的形式存储。
+
+一、顺序表
+   1、概念和结构：顺序表是用一段物理地址连续的存储单元依次存储数据元素
+                      的线性结构，一般情况 下采用数组存储。在数组上完成数据的增
+                      删改查。
+   2、一些操作：
+       （1）初始化 （构造方法）
+       （2） 增 / 删 / 改 / 查
+       增 包括头插、尾插(O(1)平均)和指定位置插入（O（n））
+                      删 包括头删、尾删(O(1))和指定位置删除或者删除某个元素
+                      改 就是修改其中的某个元素或者信息
+                      查 就是遍历查找给定的数字或信息
+                      扩容：（O（n））
+       （3）销毁（可能不存在）
+  3、考虑 数组容量（array.length）和 已有数据个数（size）的关系
+ （1）容量是够用的   size < array.length
+ （2）容量不够用怎么办？
+                假如：搬家   （1.5/2倍）
+                       int newCapacity = array.length*2;
+
+   1)找新家
+Int[] newArray = new int[newCapacity];
+
+         2)搬家
+  for(int i=0; i<size; i++){
+      newArray[i] = array[i];
+}
+
+         3)发朋友网
+  this.array = newArray;
+
+   4)老房子退掉
+  原来的数组对象，没有引用指向，变成垃圾了
+  扩容的空间越小，空间浪费越小
+  扩容的空间越大，需要扩容的频率越少
+  经验值  大概是1.5倍或者2倍
+
+  4、总结以上问题：
+  1. 中间/头部的插入删除，时间复杂度为O(N)
+  2. 增容需要申请新空间，拷贝数据，释放旧空间。会有不小的消耗。
+  3. 增容一般是呈2倍的增长，势必会有一定的空间浪费。例如当前容量
+     为 100，满了以后增容到200，我们再继续插入了5个数据，后面没
+     有数据插入了，那么就浪费了95个数据空间。
+
+5、举例：顺序表的一些增删改查操作的实现（包含扩容）
+// 顺序表的元素类型 int
+public class MyArrayList {
+    // 属性是什么
+    private int[] array;      // 代表的是存在数据的数组
+    // array.length 代表的是数组的容量
+    private int size;        // 记录顺序表的已有数据个数
+
+    // 构造方法
+    public MyArrayList() {
+        // 1. 申请空间
+        array = new int[2];
+        // 2. 初始化数据个数
+        size = 0;
+    }
+
+    // 增（重点）
+    // 平均 O(1)
+    public void pushBack(int element) {//尾插
+        ensureCapacity();
+        array[size++] = element;
+    }
+
+    public void pushFront(int element) {//头插
+        ensureCapacity();
+        for (int i = size; i >= 1; i--) {
+            array[i]  = array[i - 1];
+        }
+
+        array[0] = element;
+        size++;
+    }
+
+    public void insert(int index, int element) {//指定下标插入
+        if (index < 0 || index > size) {
+            System.err.println("下标错误");
+            return;
+        }
+
+        ensureCapacity();
+
+        for (int i = size - 1; i >= index; i--) {
+            array[i + 1] = array[i];
+        }
+        array[index] = element;
+        size++;
+    }
+    //返回element在顺序表中的下标，如果出现多次，则返回第一次出现的下标
+    public int indexOf(int element){
+        for(int i=0;i<size;i++){
+            if(array[i]==element){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int get(int index){
+        if(index<0||index>=size){
+            System.out.println("下标错误");
+            return -1;
+        }
+        return array[index];
+    }
+
+    public void set(int index,int element){
+        if(index<0||index>=size){
+            System.out.println("下标错误");
+            return;
+        }
+        array[index]=element;
+    }
+    // 删（重点)
+      //尾删
+    public void popBack() {
+        if (size <= 0) {
+            System.err.println("顺序表为空");
+            return;
+        }
+        array[--size] = 0;
+      //头删
+    public void popFront() {
+        if (size <= 0) {
+            System.err.println("顺序表为空");
+            return;
+        }
+
+        for (int i = 0; i < size - 1; i++) {
+            array[i] = array[i + 1];
+        }
+
+        array[--size] = 0;
+    }
+
+//删除下标位置的数
+    public void earse(int index) {
+        if (size <= 0) {
+            System.err.println("顺序表为空");
+            return;
+        }
+
+        if (index < 0 || index >= size) {
+            System.err.println("下标错误");
+            return;
+        }
+
+        for (int i = index + 1; i < size; i++) {
+            array[i - 1] = array[i];
+        }
+
+        array[--size] = 0;
+    }
+    //删除掉某一个元素，如果出现多次，则删除第一次出现的
+    public void remove(int element){
+        int index=indexOf(element);
+        if(index!=-1){
+        earse(index);
+        }
+    }
+
+    public void removeAll(int element){
+        //时间复杂度是O(n^2),空间复杂度是O(1)
+        int index;
+        while((index=indexOf(element))!=-1){
+            earse(index);
+        }
+
+         //时间复杂度是O(n),空间复杂度是O(n)
+         int[] newArray=new int[array.length];
+         int j=0;//新数组newArray的下标
+         for(int i=0;i<size;i++){
+             if(array[i]!=element){
+                 newArray[j++]=array[i];
+             }
+         }
+         array=newArray;
+         size=j;
+          //时间复杂度是O(n),空间复杂度是O(1)
+          int j=0;//j也是从数组array的第一个元素开始（下标）
+          for(int i=0;i<size;i++){//i也是从第一个元素开始遍历数组
+              if(array[i]!=element){
+                  array[j++]=array[i];
+              }
+          }
+          size=j;
+    }
+
+    //有些操作必须要手动来添加，才能更加保证封装性
+    public int size(){
+        return size;
+    }
+
+    public boolean isEmpty(){
+        return size==0;
+    }
+    // 查
+    // 改
+    // 打印
+    public void print() {
+        System.out.println("打印顺序表: 当前容量: " + array.length);
+        for (int i = 0; i < size; i++) {
+            System.out.print(array[i] + " ");
+        }
+        System.out.println();
+    }
+
+    // 保证容量够用，否则进行扩容
+    private void ensureCapacity() {
+        if (size < array.length) {
+            return;
+        }
+
+        int newCapacity = array.length * 2;
+        int[] newArray = new int[newCapacity];
+        for (int i = 0; i < size; i++) {
+            newArray[i] = array[i];
+        }
+        array = newArray;
+    }
+
+    public static void main(String[] args) {
+        MyArrayList list = new MyArrayList();
+        list.print();
+        list.pushBack(1);
+        list.pushBack(2);
+        list.pushBack(3);
+        list.print();  // 1 2 3
+        list.pushFront(10);
+        list.pushFront(20);
+        list.pushFront(30);
+        list.print();  // 30 20 10 1 2 3
+        list.insert(3, 100);
+        list.print();  // 30 20 10 100 1 2 3
+        list.insert(20, 200);  // 报错
+
+        list.earse(2);
+        list.earse(2);
+        list.print();  // 30 20 1 2 3
+        list.popFront();
+        list.popFront();
+        list.popFront();
+        list.print();  // 2 3
+        list.popBack();
+        list.popBack();
+        list.print();  // 空的
+        list.popBack();    // 报错
+    }
+}
+
